@@ -122,7 +122,7 @@ spec:
     metadata:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ""
-        scheduler.alpha.kubernetes.io/tolerations: [{"key":"CriticalAddonsOnly", "operator":"Exists"}]
+        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
       labels:
         app: keepalived-cloud-provider
     spec:
