@@ -1,7 +1,7 @@
 # keepalived-cloud-provider
 
 > This project is in alpha state, and should be used with caution. Whilst it is quite simple, there
-> are currently no automated tests of any kind.
+> are currently minimal unit tests and no integration tests. Contributions are very welcome.
 
 keepalived-cloud-provider is an out-of-tree Kubernetes cloud provider implementation ([more info](https://github.com/wlan0/kubernetes.github.io/blob/c0f3aa4abe99ad0528c6ec168e8fbf14fdaf49ac/docs/getting-started-guides/running-cloud-controller.md)).
 It will manage and automatically update a ConfigMap for [kube-keepalived-vip](https://github.com/kubernetes/contrib/tree/master/keepalived-vip), which will then

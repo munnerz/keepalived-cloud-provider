@@ -20,12 +20,13 @@ func (c *config) allocateIP(cidr string) (string, error) {
 		return "", err
 	}
 
+Outer:
 	for _, ip := range possible {
 		for _, svc := range c.Services {
 			// if this 'ip' candidate is already in use,
 			// break the inner loop to move onto the next IP address
 			if svc.IP == ip {
-				break
+				continue Outer
 			}
 		}
 
