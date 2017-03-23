@@ -128,7 +128,7 @@ func (k *KeepalivedLoadBalancer) syncLoadBalancer(service *v1.Service) (*v1.Load
 			glog.Infof("found existing loadbalancer for service '%s' (%s) with IP: %s", service.Name, service.UID, svc.IP)
 			// if there's a mismatch between desired loadBalancerIP and actual,
 			// break out of this loop and continue to update
-			if service.Spec.LoadBalancerIP != svc.IP {
+			if service.Spec.LoadBalancerIP != "" && service.Spec.LoadBalancerIP != svc.IP {
 				break
 			}
 
