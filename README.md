@@ -109,6 +109,7 @@ metadata:
   labels:
     app: keepalived-cloud-provider
   name: keepalived-cloud-provider
+  namespace: kube-system
 spec:
   replicas: 1
   revisionHistoryLimit: 2
@@ -119,12 +120,15 @@ spec:
     type: RollingUpdate
   template:
     metadata:
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+        scheduler.alpha.kubernetes.io/tolerations: [{"key":"CriticalAddonsOnly", "operator":"Exists"}]
       labels:
         app: keepalived-cloud-provider
     spec:
       containers:
       - name: keepalived-cloud-provider
-        image: eu.gcr.io/marley-xyz/keepalived-cloud-provider
+        image: quay.io/munnerz/keepalived-cloud-provider
         imagePullPolicy: IfNotPresent
         env:
         - name: KEEPALIVED_NAMESPACE
@@ -164,3 +168,9 @@ $ kubectl expose deployment example-com --name=example-com --type=LoadBalancer
 `keepalived-cloud-provider` will also honour the `loadBalancerIp` field in a `service.spec`, and will configure
 a load balancer with the provided IP regardless whether it is within the `KEEPALIVED_SERVICE_CIDR`
 
+```bash
+$ kubectl get services
+NAME              CLUSTER-IP       EXTERNAL-IP    PORT(S)        AGE
+test              10.98.31.230     10.210.38.66   80:31877/TCP   3s
+test2             10.107.177.153   10.210.38.65   80:31261/TCP   12m
+```
