@@ -1,3 +1,5 @@
+// import "github.com/munnerz/keepalived-cloud-provider"
+
 package main
 
 import (

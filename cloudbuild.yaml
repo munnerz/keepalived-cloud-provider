@@ -1,9 +1,13 @@
 steps:
 - name: 'gcr.io/cloud-builders/go'
   args: ['test', '$(go list ./... | grep -v /vendor/)']
+  env:
+  - 'PROJECT_ROOT=github.com/munnerz/keepalived-cloud-provider'
   id: 'go-test'
 - name: 'gcr.io/cloud-builders/go'
   args: ['build']
+  env:
+  - 'PROJECT_ROOT=github.com/munnerz/keepalived-cloud-provider'
   id: 'go-build'
 
 - name: 'gcr.io/cloud-builders/docker'
