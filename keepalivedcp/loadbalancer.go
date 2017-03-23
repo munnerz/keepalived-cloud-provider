@@ -40,10 +40,10 @@ func (k *KeepalivedLoadBalancer) GetLoadBalancer(clusterName string, service *v1
 		return nil, false, err
 	}
 
-	for _, svc := range cfg.services {
-		if svc.uid == string(service.UID) {
+	for _, svc := range cfg.Services {
+		if svc.UID == string(service.UID) {
 			return &v1.LoadBalancerStatus{
-				Ingress: []v1.LoadBalancerIngress{{IP: svc.ip}},
+				Ingress: []v1.LoadBalancerIngress{{IP: svc.IP}},
 			}, true, nil
 		}
 	}
@@ -79,12 +79,12 @@ func (k *KeepalivedLoadBalancer) deleteLoadBalancer(service *v1.Service) error {
 		return err
 	}
 
-	for _, svc := range cfg.services {
+	for _, svc := range cfg.Services {
 		// service already exists in the config so just return the status
-		if svc.uid == string(service.UID) {
-			glog.Infof("found service '%s' (%s) for deletion (%s)", service.Name, service.UID, svc.ip)
+		if svc.UID == string(service.UID) {
+			glog.Infof("found service '%s' (%s) for deletion (%s)", service.Name, service.UID, svc.IP)
 			cfg.deleteService(svc)
-			delete(cm.Data, svc.ip)
+			delete(cm.Data, svc.IP)
 
 			cfgBytes, err := cfg.encode()
 
@@ -122,18 +122,18 @@ func (k *KeepalivedLoadBalancer) syncLoadBalancer(service *v1.Service) (*v1.Load
 		return nil, err
 	}
 
-	for _, svc := range cfg.services {
+	for _, svc := range cfg.Services {
 		// service already exists in the config so just return the status
-		if svc.uid == string(service.UID) {
-			glog.Infof("found existing loadbalancer for service '%s' (%s) with IP: %s", service.Name, service.UID, svc.ip)
+		if svc.UID == string(service.UID) {
+			glog.Infof("found existing loadbalancer for service '%s' (%s) with IP: %s", service.Name, service.UID, svc.IP)
 			// if there's a mismatch between desired loadBalancerIP and actual,
 			// break out of this loop and continue to update
-			if service.Spec.LoadBalancerIP != svc.ip {
+			if service.Spec.LoadBalancerIP != svc.IP {
 				break
 			}
 
 			return &v1.LoadBalancerStatus{
-				Ingress: []v1.LoadBalancerIngress{{IP: svc.ip}},
+				Ingress: []v1.LoadBalancerIngress{{IP: svc.IP}},
 			}, nil
 		}
 	}
@@ -151,7 +151,7 @@ func (k *KeepalivedLoadBalancer) syncLoadBalancer(service *v1.Service) (*v1.Load
 		}
 	}
 
-	cfg.ensureService(serviceConfig{uid: string(service.UID), ip: ip})
+	cfg.ensureService(serviceConfig{UID: string(service.UID), IP: ip})
 	cfgBytes, err := cfg.encode()
 
 	if err != nil {

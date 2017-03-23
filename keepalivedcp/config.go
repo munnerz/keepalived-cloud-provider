@@ -11,7 +11,7 @@ import (
 )
 
 type config struct {
-	services []serviceConfig
+	Services []serviceConfig `json:"services"`
 }
 
 func (c *config) allocateIP(cidr string) (string, error) {
@@ -21,10 +21,10 @@ func (c *config) allocateIP(cidr string) (string, error) {
 	}
 
 	for _, ip := range possible {
-		for _, svc := range c.services {
+		for _, svc := range c.Services {
 			// if this 'ip' candidate is already in use,
 			// break the inner loop to move onto the next IP address
-			if svc.ip == ip {
+			if svc.IP == ip {
 				break
 			}
 		}
@@ -41,31 +41,31 @@ func (c *config) encode() ([]byte, error) {
 }
 
 func (c *config) ensureService(cfg serviceConfig) {
-	for i, s := range c.services {
-		if s.uid == cfg.uid {
-			glog.Infof("updating service with uid '%s' in config: %s->%s", cfg.uid, s.ip, cfg.ip)
-			c.services[i] = cfg
+	for i, s := range c.Services {
+		if s.UID == cfg.UID {
+			glog.Infof("updating service with uid '%s' in config: %s->%s", cfg.UID, s.IP, cfg.IP)
+			c.Services[i] = cfg
 			return
 		}
 	}
-	glog.Infof("adding new service '%s': %s", cfg.uid, cfg.ip)
-	c.services = append(c.services, cfg)
-	glog.Infof("there are now %d services in config", len(c.services))
+	glog.Infof("adding new service '%s': %s", cfg.UID, cfg.IP)
+	c.Services = append(c.Services, cfg)
+	glog.Infof("there are now %d services in config", len(c.Services))
 }
 
 func (c *config) deleteService(cfg serviceConfig) {
-	for i, s := range c.services {
-		if s.uid == cfg.uid {
-			glog.Infof("deleted service with uid %s, ip: %s from config", s.uid, s.ip)
-			c.services = append(c.services[:i], c.services[i+1:]...)
+	for i, s := range c.Services {
+		if s.UID == cfg.UID {
+			glog.Infof("deleted service with uid %s, ip: %s from config", s.UID, s.IP)
+			c.Services = append(c.Services[:i], c.Services[i+1:]...)
 			return
 		}
 	}
 }
 
 type serviceConfig struct {
-	uid string
-	ip  string
+	UID string `json:"uid"`
+	IP  string `json:"ip"`
 }
 
 func configFrom(cm *v1.ConfigMap) (*config, error) {
