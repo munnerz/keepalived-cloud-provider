@@ -154,7 +154,7 @@ spec:
       volumes:
       - name: certs
         hostPath:
-          path: /etc/ssl/certs  
+          path: /etc/ssl/certs
 ```
 
 ### Create a service
