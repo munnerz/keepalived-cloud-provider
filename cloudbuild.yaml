@@ -1,0 +1,13 @@
+steps:
+- name: 'gcr.io/cloud-builders/go'
+  args: ['test', '$(go list ./... | grep -v /vendor/)']
+  id: 'go-test'
+- name: 'gcr.io/cloud-builders/go'
+  args: ['build']
+  id: 'go-build'
+
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'eu.gcr.io/$PROJECT_ID/keepalived-cloud-provider', '.']
+  waitFor: ['go-build', 'go-test']
+
+images: ['eu.gcr.io/$PROJECT_ID/keepalived-cloud-provider']
