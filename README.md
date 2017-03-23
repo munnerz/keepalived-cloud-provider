@@ -94,9 +94,9 @@ data:
 
 In order to use the currently alpha external cloud provider functionality, we need to set a
 flag on the `kube-controller-manager` component. How to do this depends on how you deployed
-your cluster, but if deployed with `kubeadm` you should edit `/etc/kubernetes/manifests/kube-controller-manager.json`
+your cluster, but if deployed with `kubeadm` you should edit `/etc/kubernetes/manifests/kube-controller-manager.json`.
 
-### Deploy keepalived-cloud-provider
+### Deploy keepalived-cloud-provider
 
 `keepalived-cloud-provider` can be deployed with a simple Kubernetes Deployment, and performs
 leader election like other kubernetes master components. It is therefore safe to run multiple
