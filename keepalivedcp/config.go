@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/golang/glog"
+
 	"k8s.io/client-go/pkg/api/v1"
 )
 
@@ -41,16 +43,20 @@ func (c *config) encode() ([]byte, error) {
 func (c *config) ensureService(cfg serviceConfig) {
 	for i, s := range c.services {
 		if s.uid == cfg.uid {
+			glog.Infof("updating service with uid '%s' in config: %s->%s", cfg.uid, s.ip, cfg.ip)
 			c.services[i] = cfg
 			return
 		}
 	}
+	glog.Infof("adding new service '%s': %s", cfg.uid, cfg.ip)
 	c.services = append(c.services, cfg)
+	glog.Infof("there are now %d services in config", len(c.services))
 }
 
 func (c *config) deleteService(cfg serviceConfig) {
 	for i, s := range c.services {
 		if s.uid == cfg.uid {
+			glog.Infof("deleted service with uid %s, ip: %s from config", s.uid, s.ip)
 			c.services = append(c.services[:i], c.services[i+1:]...)
 			return
 		}
