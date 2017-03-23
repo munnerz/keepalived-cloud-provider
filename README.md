@@ -125,7 +125,7 @@ spec:
       containers:
       - name: keepalived-cloud-provider
         image: eu.gcr.io/marley-xyz/keepalived-cloud-provider
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         env:
         - name: KEEPALIVED_NAMESPACE
           value: kube-system
