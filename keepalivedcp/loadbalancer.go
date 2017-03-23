@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/golang/glog"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
@@ -63,6 +65,8 @@ func (k *KeepalivedLoadBalancer) EnsureLoadBalancerDeleted(clusterName string, s
 }
 
 func (k *KeepalivedLoadBalancer) deleteLoadBalancer(service *v1.Service) error {
+	glog.Infof("ensure service '%s' (%s) is deleted", service.Name, service.UID)
+
 	cm, err := k.getConfigMap()
 
 	if err != nil {
@@ -78,13 +82,24 @@ func (k *KeepalivedLoadBalancer) deleteLoadBalancer(service *v1.Service) error {
 	for _, svc := range cfg.services {
 		// service already exists in the config so just return the status
 		if svc.uid == string(service.UID) {
+			glog.Infof("found service '%s' (%s) for deletion (%s)", service.Name, service.UID, svc.ip)
 			cfg.deleteService(svc)
 			delete(cm.Data, svc.ip)
 
+			cfgBytes, err := cfg.encode()
+
+			if err != nil {
+				return fmt.Errorf("error encoding updated config: %s", err.Error())
+			}
+
+			cm.Annotations[configMapAnnotationKey] = string(cfgBytes)
+
+			glog.Infof("update configmap config annotation: %s", string(cfgBytes))
 			if _, err = k.kubeClient.ConfigMaps(k.namespace).Update(cm); err != nil {
 				return fmt.Errorf("error updating keepalived config: %s", err.Error())
 			}
 
+			glog.Infof("updated configmap")
 			return nil
 		}
 	}
@@ -93,6 +108,8 @@ func (k *KeepalivedLoadBalancer) deleteLoadBalancer(service *v1.Service) error {
 }
 
 func (k *KeepalivedLoadBalancer) syncLoadBalancer(service *v1.Service) (*v1.LoadBalancerStatus, error) {
+	glog.Infof("syncing service '%s' (%s)", service.Name, service.UID)
+
 	cm, err := k.getConfigMap()
 
 	if err != nil {
@@ -108,6 +125,7 @@ func (k *KeepalivedLoadBalancer) syncLoadBalancer(service *v1.Service) (*v1.Load
 	for _, svc := range cfg.services {
 		// service already exists in the config so just return the status
 		if svc.uid == string(service.UID) {
+			glog.Infof("found existing loadbalancer for service '%s' (%s) with IP: %s", service.Name, service.UID, svc.ip)
 			// if there's a mismatch between desired loadBalancerIP and actual,
 			// break out of this loop and continue to update
 			if service.Spec.LoadBalancerIP != svc.ip {
@@ -143,9 +161,12 @@ func (k *KeepalivedLoadBalancer) syncLoadBalancer(service *v1.Service) (*v1.Load
 	cm.Data[ip] = service.Namespace + "/" + service.Name
 	cm.Annotations[configMapAnnotationKey] = string(cfgBytes)
 
+	glog.Infof("update configmap config annotation: %s", string(cfgBytes))
 	if _, err = k.kubeClient.ConfigMaps(k.namespace).Update(cm); err != nil {
 		return nil, fmt.Errorf("error updating keepalived config: %s", err.Error())
 	}
+
+	glog.Infof("synced service '%s' (%s): %s", service.Name, service.UID, ip)
 
 	return &v1.LoadBalancerStatus{
 		Ingress: []v1.LoadBalancerIngress{{IP: ip}},
