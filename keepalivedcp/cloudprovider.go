@@ -57,7 +57,7 @@ func (k *KeepalivedCloudProvider) Instances() (cloudprovider.Instances, bool) {
 
 // Zones returns a zones interface. Also returns true if the interface is supported, false otherwise.
 func (k *KeepalivedCloudProvider) Zones() (cloudprovider.Zones, bool) {
-	return nil, false
+	return zones{}, true
 }
 
 // Clusters returns a clusters interface.  Also returns true if the interface is supported, false otherwise.
@@ -78,4 +78,10 @@ func (k *KeepalivedCloudProvider) ProviderName() string {
 // ScrubDNS provides an opportunity for cloud-provider-specific code to process DNS settings for pods.
 func (k *KeepalivedCloudProvider) ScrubDNS(nameservers, searches []string) (nsOut, srchOut []string) {
 	return nil, nil
+}
+
+type zones struct{}
+
+func (z zones) GetZone() (cloudprovider.Zone, error) {
+	return cloudprovider.Zone{"FailureDomain1", "Region1"}, nil
 }
