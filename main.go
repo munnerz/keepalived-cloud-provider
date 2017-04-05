@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/golang/glog"
+	"github.com/spf13/pflag"
+
 	"k8s.io/apiserver/pkg/server/healthz"
 	"k8s.io/apiserver/pkg/util/flag"
 	"k8s.io/apiserver/pkg/util/logs"
@@ -18,10 +21,6 @@ import (
 	"k8s.io/kubernetes/pkg/version/verflag"
 
 	"github.com/munnerz/keepalived-cloud-provider/keepalivedcp"
-	_ "github.com/munnerz/keepalived-cloud-provider/keepalivedcp"
-
-	"github.com/golang/glog"
-	"github.com/spf13/pflag"
 )
 
 func init() {

@@ -180,5 +180,13 @@ func (k *KeepalivedLoadBalancer) getConfigMap() (*apiv1.ConfigMap, error) {
 		return nil, fmt.Errorf("error getting keepalived configmap: %s", err.Error())
 	}
 
+	if cm.Data == nil {
+		cm.Data = map[string]string{}
+	}
+
+	if cm.Annotations == nil {
+		cm.Annotations = map[string]string{}
+	}
+
 	return cm, err
 }
