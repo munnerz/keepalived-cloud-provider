@@ -1,0 +1,12 @@
+language: generic
+sudo: required
+services:
+- docker
+script:
+- make verify build test images
+deploy:
+  provider: script
+  script: scripts/deploy.sh
+  on:
+    repo: munnerz/keepalived-cloud-provider
+    branch: master
