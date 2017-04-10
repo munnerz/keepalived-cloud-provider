@@ -1,4 +1,4 @@
-# keepalived-cloud-provider
+# keepalived-cloud-provider [![Build Status](https://travis-ci.org/munnerz/keepalived-cloud-provider.svg?branch=master)](https://travis-ci.org/munnerz/keepalived-cloud-provider)
 
 > This project is in alpha state, and should be used with caution. Whilst it is quite simple, there
 > are currently minimal unit tests and no integration tests. Contributions are very welcome.
