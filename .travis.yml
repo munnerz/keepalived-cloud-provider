@@ -6,7 +6,7 @@ script:
 - make verify build test images
 deploy:
   provider: script
-  script: scripts/deploy.sh
+  script: build/deploy.sh
   skip_cleanup: true
   on:
     repo: munnerz/keepalived-cloud-provider
