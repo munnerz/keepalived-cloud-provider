@@ -1,6 +1,5 @@
 set -o errexit
 set -o nounset
-set -o pipefail
 
 export REGISTRY=quay.io/munnerz/
 
