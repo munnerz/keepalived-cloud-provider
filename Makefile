@@ -46,7 +46,7 @@ GO_VERSION     = 1.8.0
 PLATFORM?=linux
 ARCH?=amd64
 
-GO_BUILD       = env GOOS=$(PLATFORM) GOARCH=$(ARCH) go build -i $(GOFLAGS) \
+GO_BUILD       = env CGO_ENABLED=0 GOOS=$(PLATFORM) GOARCH=$(ARCH) go build -i $(GOFLAGS) \
                    -ldflags "-X $(KCP_PKG)/pkg.VERSION=$(VERSION)"
 BASE_PATH      = $(ROOT:/src/github.com/munnerz/keepalived-cloud-provider/=)
 export GOPATH  = $(BASE_PATH):$(ROOT)/vendor
