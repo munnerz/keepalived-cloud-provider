@@ -83,5 +83,5 @@ func (k *KeepalivedCloudProvider) ScrubDNS(nameservers, searches []string) (nsOu
 type zones struct{}
 
 func (z zones) GetZone() (cloudprovider.Zone, error) {
-	return cloudprovider.Zone{"FailureDomain1", "Region1"}, nil
+	return cloudprovider.Zone{FailureDomain: "FailureDomain1", Region: "Region1"}, nil
 }
