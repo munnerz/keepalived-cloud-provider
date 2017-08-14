@@ -1,13 +1,17 @@
 language: generic
 sudo: required
+
 services:
 - docker
+
 script:
 - make verify build test images
+
 deploy:
   provider: script
   script: build/deploy.sh
   skip_cleanup: true
   on:
     repo: munnerz/keepalived-cloud-provider
+    tags: true
     branch: master
