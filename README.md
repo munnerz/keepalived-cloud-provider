@@ -93,8 +93,18 @@ data:
 ### Configure kube-controller-manager
 
 In order to use the currently alpha external cloud provider functionality, we need to set a
-flag on the `kube-controller-manager` component. How to do this depends on how you deployed
-your cluster, but if deployed with `kubeadm` you should edit `/etc/kubernetes/manifests/kube-controller-manager.json`.
+flag on the `kube-controller-manager` component. How to do this depends on how
+you deployed your cluster, but if deployed with `kubeadm` you should edit
+`/etc/kubernetes/manifests/kube-controller-manager.yaml`. and add
+`--cloud-provider external` to the command section.
+
+If you are using the `kubeadm` config file, then the following fragment will
+enable the external cloud provider.
+
+```yaml
+controllerManagerExtraArgs:
+  cloud-provider: external
+```
 
 ### Deploy keepalived-cloud-provider
 
