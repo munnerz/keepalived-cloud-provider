@@ -18,7 +18,6 @@ import (
 	"k8s.io/kubernetes/pkg/cloudprovider"
 	_ "k8s.io/kubernetes/pkg/cloudprovider/providers"
 	_ "k8s.io/kubernetes/pkg/version/prometheus" // for version metric registration
-	"k8s.io/kubernetes/pkg/version/verflag"
 
 	"github.com/munnerz/keepalived-cloud-provider/keepalivedcp"
 )
@@ -30,18 +29,20 @@ func init() {
 func main() {
 	s := options.NewCloudControllerManagerServer()
 	s.AddFlags(pflag.CommandLine)
+	addVersionFlag()
 
 	flag.InitFlags()
 	logs.InitLogs()
 	defer logs.FlushLogs()
 
-	verflag.PrintAndExitIfRequested()
+	printAndExitIfRequested()
 
 	cloud, err := cloudprovider.InitCloudProvider(keepalivedcp.ProviderName, s.CloudConfigFile)
 	if err != nil {
 		glog.Fatalf("Cloud provider could not be initialized: %v", err)
 	}
 
+	glog.Info("Starting version ", version)
 	if err := app.Run(s, cloud); err != nil {
 		fmt.Fprintf(os.Stderr, "%v\n", err)
 		os.Exit(1)
