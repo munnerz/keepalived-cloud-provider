@@ -138,7 +138,7 @@ spec:
     spec:
       containers:
       - name: keepalived-cloud-provider
-        image: quay.io/munnerz/keepalived-cloud-provider:canary
+        image: quay.io/munnerz/keepalived-cloud-provider:0.0.1
         imagePullPolicy: IfNotPresent
         env:
         - name: KEEPALIVED_NAMESPACE
