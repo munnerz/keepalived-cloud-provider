@@ -44,12 +44,12 @@ func (c *config) encode() ([]byte, error) {
 func (c *config) ensureService(cfg serviceConfig) {
 	for i, s := range c.Services {
 		if s.UID == cfg.UID {
-			glog.Infof("updating service with uid '%s' in config: %s->%s", cfg.UID, s.IP, cfg.IP)
+			glog.Infof("updating service with uid '%s' in config: %s->%s(%s)", cfg.UID, s.IP, cfg.IP, cfg.ForwardMethod)
 			c.Services[i] = cfg
 			return
 		}
 	}
-	glog.Infof("adding new service '%s': %s", cfg.UID, cfg.IP)
+	glog.Infof("adding new service '%s': %s(%s)", cfg.UID, cfg.IP, cfg.ForwardMethod)
 	c.Services = append(c.Services, cfg)
 	glog.Infof("there are now %d services in config", len(c.Services))
 }
@@ -65,8 +65,11 @@ func (c *config) deleteService(cfg serviceConfig) {
 }
 
 type serviceConfig struct {
-	UID string `json:"uid"`
-	IP  string `json:"ip"`
+	UID              string `json:"uid"`
+	IP               string `json:"ip"`
+	ServiceNamespace string `json:"serviceNamespace"`
+	ServiceName      string `json:"serviceName"`
+	ForwardMethod    string `json:"forwardMethod,omitempty"`
 }
 
 func configFrom(cm *v1.ConfigMap) (*config, error) {
@@ -79,6 +82,20 @@ func configFrom(cm *v1.ConfigMap) (*config, error) {
 		}
 	}
 	return &cfg, nil
+}
+
+func (c *config) toConfigMapData() map[string]string {
+	d := make(map[string]string, len(c.Services))
+	for _, s := range c.Services {
+
+		if s.ForwardMethod != "" {
+			d[s.IP] = s.ServiceNamespace + "/" + s.ServiceName + ":" + s.ForwardMethod
+		} else {
+			d[s.IP] = s.ServiceNamespace + "/" + s.ServiceName
+		}
+	}
+
+	return d
 }
 
 // from: https://gist.github.com/kotakanbe/d3059af990252ba89a82
