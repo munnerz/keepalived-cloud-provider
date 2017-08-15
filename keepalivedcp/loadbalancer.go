@@ -14,17 +14,19 @@ import (
 )
 
 const configMapAnnotationKey = "k8s.co/cloud-provider-config"
+const serviceForwardMethodAnnotationKey = "k8s.co/keepalived-forward-method"
 
 type KeepalivedLoadBalancer struct {
 	kubeClient      *kubernetes.Clientset
 	namespace, name string
 	serviceCidr     string
+	forwardMethod   string
 }
 
 var _ cloudprovider.LoadBalancer = &KeepalivedLoadBalancer{}
 
-func NewKeepalivedLoadBalancer(kubeClient *kubernetes.Clientset, ns, name, serviceCidr string) cloudprovider.LoadBalancer {
-	return &KeepalivedLoadBalancer{kubeClient, ns, name, serviceCidr}
+func NewKeepalivedLoadBalancer(kubeClient *kubernetes.Clientset, ns, name, serviceCidr string, forwardMethod string) cloudprovider.LoadBalancer {
+	return &KeepalivedLoadBalancer{kubeClient, ns, name, serviceCidr, forwardMethod}
 }
 
 func (k *KeepalivedLoadBalancer) GetLoadBalancer(clusterName string, service *v1.Service) (status *v1.LoadBalancerStatus, exists bool, err error) {
@@ -122,7 +124,10 @@ func (k *KeepalivedLoadBalancer) syncLoadBalancer(service *v1.Service) (*v1.Load
 		return nil, err
 	}
 
-	for _, svc := range cfg.Services {
+	forwardMethod := k.forwardMethod
+	reallocateIP := true
+	var svc serviceConfig
+	for _, svc = range cfg.Services {
 		// service already exists in the config so just return the status
 		if svc.UID == string(service.UID) {
 			glog.Infof("found existing loadbalancer for service '%s' (%s) with IP: %s", service.Name, service.UID, svc.IP)
@@ -132,33 +137,53 @@ func (k *KeepalivedLoadBalancer) syncLoadBalancer(service *v1.Service) (*v1.Load
 				break
 			}
 
+			if annotationForwardMethod, ok := service.Annotations[serviceForwardMethodAnnotationKey]; ok {
+				forwardMethod = annotationForwardMethod
+			}
+			if forwardMethod != svc.ForwardMethod {
+				reallocateIP = false
+				break
+			}
+
 			return &v1.LoadBalancerStatus{
 				Ingress: []v1.LoadBalancerIngress{{IP: svc.IP}},
 			}, nil
 		}
 	}
 
-	var ip string
+	ip := svc.IP
 	if lbip := service.Spec.LoadBalancerIP; lbip != "" {
 		if i := net.ParseIP(lbip); i == nil {
 			return nil, fmt.Errorf("invalid loadBalancerIP specified '%s': %s", lbip, err.Error())
 		}
 		ip = lbip
-	} else {
+	} else if reallocateIP {
 		ip, err = cfg.allocateIP(k.serviceCidr)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	cfg.ensureService(serviceConfig{UID: string(service.UID), IP: ip})
+	sc := serviceConfig{
+		UID:              string(service.UID),
+		IP:               ip,
+		ServiceNamespace: service.Namespace,
+		ServiceName:      service.Name,
+		ForwardMethod:    forwardMethod,
+	}
+	cfg.ensureService(sc)
 	cfgBytes, err := cfg.encode()
 
 	if err != nil {
 		return nil, fmt.Errorf("error encoding updated config: %s", err.Error())
 	}
 
-	cm.Data[ip] = service.Namespace + "/" + service.Name
+	cm.Data = cfg.toConfigMapData()
+	if forwardMethod != "" {
+		cm.Data[ip] = service.Namespace + "/" + service.Name + ":" + forwardMethod
+	} else {
+		cm.Data[ip] = service.Namespace + "/" + service.Name
+	}
 	cm.Annotations[configMapAnnotationKey] = string(cfgBytes)
 
 	glog.Infof("update configmap config annotation: %s", string(cfgBytes))

@@ -184,3 +184,39 @@ NAME              CLUSTER-IP       EXTERNAL-IP    PORT(S)        AGE
 test              10.98.31.230     10.210.38.66   80:31877/TCP   3s
 test2             10.107.177.153   10.210.38.65   80:31261/TCP   12m
 ```
+
+#### Advanced: Configure forwarding method for the service
+
+The `kube-keepalived-vip` service supports both the `NAT` and `DR` methods of
+IPVS forwarding for the service traffic.  The default forwarding method is `NAT`.
+Depending on your network topology, you may need to change that to `DR` (direct
+routing).  To change this globally, you can set the environment variable
+`KEEPALIVED_DEFAULT_FORWARD_METHOD` to `NAT` or `DR`.  To change it on a per
+service basis, then specify the method via the
+`k8s.co/keepalived-forward-method` annotation on the service as shown
+below:
+
+```yaml
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  labels:
+    k8s-app: nginx
+  annotations:
+    k8s.co/keepalived-forward-method: DR
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 443
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    k8s-app: nginx
+```
+
+More information on the differences between `NAT` and `DR` methods can be found
+in the [Keepalived
+documentation](http://keepalived.readthedocs.io/en/latest/load_balancing_techniques.html)
