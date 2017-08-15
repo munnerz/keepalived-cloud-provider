@@ -33,7 +33,7 @@ SRC_DIRS       = $(shell sh -c "find $(TOP_SRC_DIRS) -name \\*.go \
                    -exec dirname {} \\; | sort | uniq")
 TEST_DIRS     ?= $(shell sh -c "find $(TOP_SRC_DIRS) -name \\*_test.go \
                    -exec dirname {} \\; | sort | uniq")
-VERSION       ?= $(shell git describe --always --abbrev=7 --dirty)
+VERSION       ?= $(shell git describe --always --tags --abbrev=7 --dirty)
 ifeq ($(shell uname -s),Darwin)
 STAT           = stat -f '%c %N'
 else
@@ -47,7 +47,7 @@ PLATFORM?=linux
 ARCH?=amd64
 
 GO_BUILD       = env CGO_ENABLED=0 GOOS=$(PLATFORM) GOARCH=$(ARCH) go build -i $(GOFLAGS) \
-                   -ldflags "-X $(KCP_PKG)/pkg.VERSION=$(VERSION)"
+                   -ldflags "-X main.version=$(VERSION)"
 BASE_PATH      = $(ROOT:/src/github.com/munnerz/keepalived-cloud-provider/=)
 export GOPATH  = $(BASE_PATH):$(ROOT)/vendor
 
@@ -104,7 +104,7 @@ verify: .init
 	@# Exclude the generated (zz) files for now, as well as defaults.go (it
 	@# observes conventions from upstream that will not pass lint checks).
 	@$(DOCKER_CMD) sh -c \
-	  'for i in $$(find $(TOP_SRC_DIRS) -name *.go); \
+	  'for i in $$(find $(TOP_SRC_DIRS) -name \\*.go); \
 	  do \
 	   golint --set_exit_status $$i || exit 1; \
 	  done'
